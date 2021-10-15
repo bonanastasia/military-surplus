@@ -1,0 +1,2 @@
+"0","# filter our texas-only data into new file"
+"0","leso_filtered %>% write_rds(""data-processed/01-leso-tx.rds"")"

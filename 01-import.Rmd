@@ -1,0 +1,99 @@
+---
+title: "Military Surplus import/clean"
+output: html_notebook
+---
+
+## Goals of this notebook
+
+- Download the data
+- Import the data
+- Clean datatypes
+- Remove unnecessary columns
+- Create a total_value column
+- Filter to Texas agencies
+- Filter the date range (since Jan. 1 2010)
+- Export the cleaned data
+
+## Project Setup
+
+Setup our project environment
+
+```{r setup}
+library(tidyverse)
+```
+
+## Download Defense Data
+
+The Defense Logistics Agency transfers surplus military equipment to local law enforcement through its [Law Enforcement Support Office](https://www.dla.mil/DispositionServices/Offers/Reutilization/LawEnforcement/PublicInformation/). You can find more information [about the program here](https://www.dla.mil/DispositionServices/Offers/Reutilization/LawEnforcement/ProgramFAQs/)
+
+```{r download_data} 
+download.file("https://github.com/utdata/rwd-r-leso/blob/main/data-processed/leso.csv?raw=true", "data-raw/leso.csv")
+```
+
+## Read data
+
+Read the csv file imported
+
+```{r read}
+
+leso <- read_csv("data-raw/leso.csv") # assign data to new tibble object
+
+leso # print tibble as table
+```
+
+```{r glimpse}
+#glimpse tibble to see columns
+leso %>% glimpse()
+```
+
+## Clean up our columns
+
+Use select to get rid of the columns we don't need!
+
+```{r select_columns}
+leso_tight <- leso %>% 
+  select(
+    -sheet, 
+    -nsn,
+    -starts_with("demil")
+  )
+
+leso_tight %>% glimpse()
+```
+
+## Create a total value column
+
+Use mutate to get the total value of items in each row
+
+```{r mutate}
+# create new tibble with a total value column
+ leso_total <- leso_tight %>% 
+  mutate(total_value = quantity * acquisition_value) 
+
+# glimpse our new tibble
+leso_total %>% glimpse()
+```
+
+## Filter for Texas data
+
+Use filter to find only the data pertinent to Texas police departments since January 01, 2010
+
+```{r filter_data}
+# filter data for only Texas departments after Jan. 1, 2010
+leso_filtered <- leso_total %>% 
+  filter(
+    state == "TX",
+    ship_date >= "2010-01-01"
+  ) 
+
+leso_filtered %>% glimpse()
+```
+
+## Export data
+
+Now that we've gotten rid of everything we don't need, let's export shall we?
+
+```{r export_filtered}
+# filter our texas-only data into new file
+leso_filtered %>% write_rds("data-processed/01-leso-tx.rds")
+```

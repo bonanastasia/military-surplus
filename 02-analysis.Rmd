@@ -1,0 +1,220 @@
+---
+title: "Military surplus analysis"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Setup
+
+Get the tidyverse library all up in this file!
+
+```{r setup}
+library(tidyverse)
+```
+
+## Import Data
+
+Import our cleaned and filtered data into this notebook
+
+```{r import_data}
+#import from processed folder
+tx <- read_rds("data-processed/01-leso-tx.rds")
+
+# glimpse our data
+tx %>% glimpse()
+```
+
+## Agency totals
+
+For each agency in Texas, find the summed **quantity** and summed **total value** of the equipment they received.
+
+```{r summed_quant_and_totals}
+tx_quant_totals <- tx %>% 
+  group_by(agency_name) %>% # group by agency
+  summarize(
+    summed_quantity = sum(quantity),
+    summed_total_val = sum(total_value)
+  ) %>% # sum total quantity and total values
+  arrange(summed_total_val %>% desc()) # Arrange by dept with most total val
+
+#peek at results
+tx_quant_totals
+```
+
+#### Texas total gifts
+
+Take a closer look at how much value went to Texas overall
+
+```{r texas_totals_val}
+tx %>% 
+  summarize(
+    summed_quantity = sum(quantity),
+    summed_total_val = sum(total_value)
+  ) 
+```
+
+
+## Look at local cities
+
+Filter summed quantity and totals data for only specific local departments
+
+```{r local_filter}
+# create list of reusable local dept.'s
+local_agencies <- c(
+  "AUSTIN POLICE DEPT",
+  "SAN MARCOS POLICE DEPT",
+  "TRAVIS COUNTY SHERIFFS OFFICE",
+  "UNIV OF TEXAS SYSTEM POLICE HI_ED",
+  "WILLIAMSON COUNTY SHERIFF'S OFFICE"
+)
+
+# filter quant/total data for only local agencies
+tx_quant_totals %>% 
+  filter(agency_name %in% local_agencies)
+```
+## Breakdown local agency items
+
+Finding the sums of each different item each local agency has received since 2010
+
+### Austin Police Department items
+
+What did our city buy the last 10 years?
+
+**Austin Population**: 961,855 (2020 Census)
+
+
+```{r items_austin_10}
+tx %>% 
+  filter(
+    agency_name == "AUSTIN POLICE DEPT" # get only Austin entries
+  ) %>% 
+  group_by(item_name) %>% # group same items together
+  summarize(
+    summed_quantity = sum(quantity), #sum all quantities
+    summed_total_val = sum(total_value) # sum all totals
+  ) %>% 
+  arrange(summed_total_val %>% desc()) #arrange by most expensive
+```
+
+### Last 5 years (since Jan. 01, 2015)
+
+Let's take a closer look
+
+```{r items_austin_five}
+tx %>% 
+  filter(
+    agency_name == "AUSTIN POLICE DEPT", # get only Austin entries
+    ship_date >= "2015-01-01"
+  ) %>% 
+  group_by(item_name) %>% # group same items together
+  summarize(
+    summed_quantity = sum(quantity), #sum all quantities
+    summed_total_val = sum(total_value) # sum all totals
+  ) %>% 
+  arrange(summed_total_val %>% desc()) #arrange by most expensive
+```
+```{r austin_totals_five}
+tx %>% 
+  filter(
+    agency_name == "AUSTIN POLICE DEPT", # get only Austin entries
+    ship_date >= "2015-01-01"
+  ) %>% 
+  summarize(
+    summed_quantity = sum(quantity),
+    summed_total_val = sum(total_value)
+  ) 
+```
+
+```{r austin_totals_ten}
+tx %>% 
+  filter(
+    agency_name == "AUSTIN POLICE DEPT", # get only Austin entries
+  ) %>% 
+  summarize(
+    summed_quantity = sum(quantity),
+    summed_total_val = sum(total_value)
+  ) 
+```
+
+
+### San Marcos Police Dept. items
+
+Ok, let's take a look at San Marcos
+
+**San Marcos Population**: 67,553 (2020 Census)
+
+```{r items_san_marcos}
+tx %>% 
+  filter(
+    agency_name == "SAN MARCOS POLICE DEPT" # get only San Marcos entries
+  ) %>% 
+  group_by(item_name) %>% # group same items together
+  summarize(
+    summed_quantity = sum(quantity), #sum all quantities
+    summed_total_val = sum(total_value) # sum all totals
+  ) %>% 
+  arrange(summed_total_val %>% desc()) #arrange by most expensive
+```
+
+### Travis Co. Sheriff's Office items
+
+Ok, let's take a look at Travis County
+
+**Travis County Population**: 1,290,188 (2020 Census)
+
+```{r items_travis_co}
+tx %>% 
+  filter(
+    agency_name == "TRAVIS COUNTY SHERIFFS OFFICE" # get only Travis Co. Sheriff entries
+  ) %>% 
+  group_by(item_name) %>% # group same items together
+  summarize(
+    summed_quantity = sum(quantity), #sum all quantities
+    summed_total_val = sum(total_value) # sum all totals
+  ) %>% 
+  arrange(summed_total_val %>% desc()) #arrange by most expensive
+```
+
+### University of Texas Police
+
+Ok, now let's look at UT
+
+**Travis County Population**: 1,290,188 (2020 Census)
+
+```{r items_ut_austin}
+tx %>% 
+  filter(
+    agency_name == "UNIV OF TEXAS SYSTEM POLICE HI_ED" # get only Travis Co. Sheriff entries
+  ) %>% 
+  group_by(item_name) %>% # group same items together
+  summarize(
+    summed_quantity = sum(quantity), #sum all quantities
+    summed_total_val = sum(total_value) # sum all totals
+  ) %>% 
+  arrange(summed_total_val %>% desc()) #arrange by most expensive
+```
+
+### Williamson County Sheriff's Office items
+
+Lastly, let's take a look at Williamson
+
+**Williamson County Population**: 609,017 (2020 Census)
+
+```{r items_williamson_co}
+tx %>% 
+  filter(
+    agency_name == "WILLIAMSON COUNTY SHERIFF'S OFFICE" # get only Williamson Co. Sheriff entries
+  ) %>% 
+  group_by(item_name) %>% # group same items together
+  summarize(
+    summed_quantity = sum(quantity), #sum all quantities
+    summed_total_val = sum(total_value) # sum all totals
+  ) %>% 
+  arrange(summed_total_val %>% desc()) #arrange by most expensive
+```
+## Some notable equipment
+
+- **MINE RESISTANT VEHICLE**: Mine-Resistant, Ambush-Protected vehicle developed to withstand impact from roadside bombs in Iraq and Afghanistan. Mostly used in parades, but have been deployed in standoffs with active shooters. (San Marcos: 1, Travis County: 1, )
+- **UNMANNED VEHICLE,GROUND**: UGVs; Robotics vehicle used for many applications militarily like explosive ordinance disposal (EOD) such as landmines, loading heavy items, and repairing ground conditions under enemy fire; Civilian uses include urban search and rescue, fire fighting, and nuclear response. (San Marcos: 3)
+- **510 PackBot**:  tactical mobile robot developed by Endeavor Robotics; used for high-threat scenarios such as surveillance, chemical and biological detection, and bomb disposal. (Travis County: 1, Williamson County: 2, San Marcos: 1, Austin: 4)
