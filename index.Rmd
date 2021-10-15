@@ -2,7 +2,7 @@
 title: "Military Surplus Project"
 output:
   html_document:
-    theme: flatly
+    theme: lumen
     toc: true
     toc_depth: 3
     toc_float: true
